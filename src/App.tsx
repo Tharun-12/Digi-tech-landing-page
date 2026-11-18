@@ -255,6 +255,7 @@
 
 import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import usePageTracking from './hooks/usePageTracking';
 
 import Header from './sections/Header';
 import Hero from './sections/Hero';
@@ -279,6 +280,12 @@ import IiiQBetsLanding from './sections/IiiQBetsLandingpage';
 import PrivacyPolicy from './sections/PrivacyPolicy';
 import TermsAndConditions from './sections/TermsAndConditions';
 import VisionApproach from './sections/VisionApproach';
+
+// Facebook Pixel Page Tracking
+function PageTracker() {
+  usePageTracking();
+  return null;
+}
 
 function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -317,12 +324,16 @@ function HomePage() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-      <Route path="/terms" element={<TermsAndConditions />} />
-    </Routes>
+    <>
+      <PageTracker />
+
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
+      </Routes>
+    </>
   );
 }
 
