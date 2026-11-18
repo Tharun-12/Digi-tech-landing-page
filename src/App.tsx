@@ -202,6 +202,7 @@ import FloatingButtons from './components/FloatingButtons';
 import GetStartedTab from './components/GetStartedTab';
 import LeadModal from './components/LeadModal';
 import MobileCtaBar from './sections/MobileCtaBar';
+import IiiQBetsLanding from './sections/IiiQBetsLandingpage';
 
 
 function App() {
@@ -220,16 +221,17 @@ function App() {
       <Header onRequestCall={openModal} />
 
       <main>
-        <Hero onRequestCall={openModal} />
-        <QuickLinks />
+        {/* <Hero onRequestCall={openModal} /> */}
+        <IiiQBetsLanding />
+        {/* <QuickLinks /> */}
         <WhoWeAre />
-        <Services onRequestCall={openModal} />
-        <Industries />
+        {/* <Services onRequestCall={openModal} /> */}
+        {/* <Industries /> */}
         <Process />
-        <WhyChooseUs />
+        {/* <WhyChooseUs /> */}
         <BrandIdentitySection onRequestCall={openModal} />
-        <Testimonials />
-        <Faq onRequestCall={openModal} />
+        {/* <Testimonials /> */}
+        {/* <Faq onRequestCall={openModal} /> */}
         <MidCta onRequestCall={openModal} />
       </main>
 

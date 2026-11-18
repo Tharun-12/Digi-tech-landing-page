@@ -66,9 +66,10 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
 import { SERVICE_OPTIONS } from '../sections/Config';
+import { BASE_URL } from '@/Apiurls/apiurl';
 
 // Backend base URL (Vite). For Create React App use: process.env.REACT_APP_API_URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL =  BASE_URL;
 
 const inputClass =
   'mt-1 w-full rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
