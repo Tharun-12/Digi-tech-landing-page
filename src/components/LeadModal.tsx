@@ -63,11 +63,12 @@
 //   );
 // }
 
-
-
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
 import { SERVICE_OPTIONS } from '../sections/Config';
+
+// Backend base URL (Vite). For Create React App use: process.env.REACT_APP_API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const inputClass =
   'mt-1 w-full rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
@@ -111,21 +112,28 @@ export default function LeadModal({
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget).entries());
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
     setSending(true);
     setError('');
     try {
-      // TODO: send `data` to your backend / CRM / Google Sheet here, e.g.
-      // const res = await fetch('/api/lead', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...data, source: 'modal' }),
-      // });
-      // if (!res.ok) throw new Error('Request failed');
-      console.log('Lead submitted', data);
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, source: 'modal' }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Request failed');
+      }
+      form.reset();
       setSubmitted(true);
-    } catch {
-      setError('Something went wrong. Please try again or contact us on WhatsApp.');
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message !== 'Request failed'
+          ? err.message
+          : 'Something went wrong. Please try again or contact us on WhatsApp.'
+      );
     } finally {
       setSending(false);
     }

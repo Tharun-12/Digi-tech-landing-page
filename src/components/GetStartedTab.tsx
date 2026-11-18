@@ -63,19 +63,26 @@
 // }
 
 
-
 import { Sparkles } from 'lucide-react';
 
 // Vertical side tab. Opens the shared lead pop-up (LeadModal) instead of its own form.
 // Hidden on mobile, where the bottom Call / WhatsApp bar is shown instead.
-export default function GetStartedTab({ onRequestCall }: { onRequestCall: () => void }) {
+export default function GetStartedTab({
+  onRequestCall,
+  hidden = false,
+}: {
+  onRequestCall: () => void;
+  hidden?: boolean; // pass `hidden={modalOpen}` to hide the tab while the modal is open
+}) {
+  if (hidden) return null;
+
   return (
     <button
       type="button"
       onClick={onRequestCall}
       aria-haspopup="dialog"
-      className="fixed right-0 top-1/2 z-[75] hidden -translate-y-1/2 rounded-l-xl bg-brand-500 py-4 pl-2 pr-3 font-heading text-xs font-bold uppercase tracking-[0.25em] text-white shadow-lift transition hover:bg-brand-600 md:block"
-      style={{ writingMode: 'vertical-rl' }}
+      aria-label="Get started – request a consultation"
+      className="fixed right-0 top-1/2 z-[75] hidden -translate-y-1/2 rounded-l-xl bg-brand-500 py-4 pl-2 pr-3 font-heading text-xs font-bold uppercase tracking-[0.25em] text-white shadow-lift transition [writing-mode:vertical-rl] hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600 md:block"
     >
       <span className="inline-flex items-center gap-2">
         <Sparkles className="h-4 w-4 rotate-90" aria-hidden="true" />
