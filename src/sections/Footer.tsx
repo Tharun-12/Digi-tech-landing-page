@@ -272,15 +272,18 @@
 
 
 
+
 import { ArrowRight, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import logo from '../assets/logo1.png'; // adjust path/filename to match your project
 import {
-  CONTACT_ADDRESS,
   CONTACT_EMAIL,
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_HREF,
   WHATSAPP_URL,
 } from '../sections/Config';
+
+const CONTACT_ADDRESS =
+  'KRIKA MKB Corporation Private Limited (Registered Legal Name For iiiQBets), Skyline Beverly Park # D 402, Amruthahalli Main Road, Amruthahalli Bangalore – 560092';
 
 const services = [
   'Digital Marketing',
@@ -294,10 +297,10 @@ const services = [
 ];
 
 const solutions = [
-  'WhatsApp Business Automation',
-  'CRM & Business Automation',
-  'Business Growth Solutions',
   'End-to-End Digital Ecosystem',
+  'Business Growth Solutions',
+  'CRM & Business Automation',
+  'WhatsApp Business Automation',
 ];
 
 const quickLinks = [
@@ -356,7 +359,7 @@ export default function Footer({ onRequestCall }: { onRequestCall: () => void })
           <ul className="mt-5 space-y-3 text-sm">
             <li className="flex items-start gap-2.5">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" aria-hidden="true" />
-              {CONTACT_ADDRESS}
+              <span>{CONTACT_ADDRESS}</span>
             </li>
             <li>
               <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-center gap-2.5 transition hover:text-white">
@@ -398,8 +401,8 @@ export default function Footer({ onRequestCall }: { onRequestCall: () => void })
         <div className="container-x flex flex-col items-center justify-between gap-3 py-6 text-xs text-navy-100/70 sm:flex-row">
           <p>© {new Date().getFullYear()} iiiQBets · KRIKA MKB Corporation Private Limited</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <a href="#" className="transition hover:text-white">Terms and Conditions</a>
-            <a href="#" className="transition hover:text-white">Privacy Policy</a>
+            <a href="/terms" className="transition hover:text-white">Terms and Conditions</a>
+            <a href="/privacy-policy" className="transition hover:text-white">Privacy Policy</a>
           </div>
         </div>
       </div>

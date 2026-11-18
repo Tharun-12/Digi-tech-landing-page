@@ -150,7 +150,17 @@ export default function WhoWeAre() {
         </Reveal>
 
         <Reveal>
-          <SectionHeading eyebrow="::: About iiiQBets" title="Strategy, Creativity & Technology Under One Roof" />
+  
+    {/* Eyebrow */}
+  <p className="text-xs sm:text-sm font-semibold tracking-[0.2em]  text-brand-500">
+    ::: About iiiQbets
+  </p>
+
+  {/* Title */}
+  <h1 className="mt-3 font-heading font-extrabold text-balance leading-tight text-3xl sm:text-4xl lg:text-[2.75rem] text-navy-800">
+    Strategy, Creativity &amp; Technology Under One Roof
+  </h1>
+
           <p className="mt-6 leading-relaxed text-navy-900/80">
             iiiQBets is a digital growth partner for businesses that want to improve visibility, connect with
             the right customers and create new opportunities. From branding and digital marketing to websites
