@@ -45,7 +45,10 @@ const visionPoints = [
 
 const VisionApproach: React.FC = () => {
   return (
-    <section className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-32">
+     <section
+      id="why-choose-us"
+      className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-32"
+    >
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-[#E51A22]/5 blur-3xl" />
       <div className="pointer-events-none absolute -right-40 bottom-40 h-[420px] w-[420px] rounded-full bg-[#102B5C]/5 blur-3xl" />

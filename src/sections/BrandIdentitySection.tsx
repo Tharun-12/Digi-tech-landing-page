@@ -46,7 +46,10 @@ const brandServices = [
 
 const BrandIdentitySection: React.FC<{ onRequestCall: () => void }> = ({ onRequestCall }) => {
   return (
-    <section className="relative overflow-hidden bg-white py-24 md:py-32">
+      <section
+      id="brand-identity"
+      className="relative overflow-hidden bg-white py-24 md:py-32"
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         {/* Header */}
         <div className="mb-20 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-end">

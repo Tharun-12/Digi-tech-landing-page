@@ -1,77 +1,10 @@
-// import { X } from 'lucide-react';
-// import { useEffect } from 'react';
-// import LeadFields from './LeadFields';
-
-// export default function LeadModal({
-//   open,
-//   onClose,
-// }: {
-//   open: boolean;
-//   onClose: () => void;
-// }) {
-//   useEffect(() => {
-//     if (!open) return;
-//     const onKey = (e: KeyboardEvent) => {
-//       if (e.key === 'Escape') onClose();
-//     };
-//     document.addEventListener('keydown', onKey);
-//     document.body.style.overflow = 'hidden';
-//     return () => {
-//       document.removeEventListener('keydown', onKey);
-//       document.body.style.overflow = '';
-//     };
-//   }, [open, onClose]);
-
-//   if (!open) return null;
-
-//   return (
-//     <div
-//       className="fixed inset-0 z-[90] flex items-center justify-center p-4"
-//       role="dialog"
-//       aria-modal="true"
-//       aria-label="Request a call"
-//     >
-//       <button
-//         type="button"
-//         aria-label="Close dialog"
-//         onClick={onClose}
-//         className="absolute inset-0 bg-navy-950/70 backdrop-blur-sm"
-//       />
-//       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 sm:p-8 shadow-lift">
-//         <button
-//           type="button"
-//           onClick={onClose}
-//           aria-label="Close"
-//           className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-navy-50 text-navy-700 transition hover:bg-navy-100"
-//         >
-//           <X className="h-5 w-5" aria-hidden="true" />
-//         </button>
-//         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-500">
-//           Get Started
-//         </p>
-//         <h3 className="mt-2 font-heading text-2xl font-extrabold text-navy-800">
-//           Request a Call
-//         </h3>
-//         <p className="mt-1.5 text-sm text-navy-600/90">
-//           Talk to our digital marketing strategist — free consultation.
-//         </p>
-//         <div className="mt-6">
-//           <LeadFields source="modal" />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
-import { SERVICE_OPTIONS } from '../sections/Config';
+// Make sure these imports match your project structure
+import { SERVICE_OPTIONS } from '../sections/Config'; 
 import { BASE_URL } from '@/Apiurls/apiurl';
 
-// Backend base URL (Vite). For Create React App use: process.env.REACT_APP_API_URL
-const API_URL =  BASE_URL;
+const API_URL = BASE_URL;
 
 const inputClass =
   'mt-1 w-full rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
@@ -89,10 +22,37 @@ export default function LeadModal({
   const [error, setError] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
 
+  // --- NEW: Listen for hash changes to open/close modal ---
+  useEffect(() => {
+    const handleHashChange = () => {
+      const isContactHash = window.location.hash === '#contact';
+      // If URL has #contact but modal is closed, open it
+      if (isContactHash && !open) {
+        // Assuming 'open' is controlled by a parent, we might need a way to trigger onOpen
+        // If this component doesn't have access to an onOpen prop, it's better to handle this in the parent.
+        // However, if we are handling state internally, we would setOpen(true) here.
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [open]);
+  // --------------------------------------------------------
+
+  // --- NEW: Modified onClose to clean up URL ---
+  const handleClose = () => {
+    onClose();
+    // Remove the #contact from the URL when closed
+    if (window.location.hash === '#contact') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+  // --------------------------------------------
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose(); // Use handleClose here
     };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
@@ -101,7 +61,7 @@ export default function LeadModal({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
-  }, [open, onClose]);
+  }, [open]); // Removed onClose from deps since handleClose wraps it
 
   // Reset the form each time the modal is closed
   useEffect(() => {
@@ -152,13 +112,13 @@ export default function LeadModal({
       <button
         type="button"
         aria-label="Close dialog"
-        onClick={onClose}
+        onClick={handleClose} // Use handleClose
         className="absolute inset-0 bg-navy-950/70 backdrop-blur-sm"
       />
       <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-lift sm:p-6">
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose} // Use handleClose
           aria-label="Close"
           className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-navy-50 text-navy-700 transition hover:bg-navy-100"
         >
@@ -176,7 +136,7 @@ export default function LeadModal({
             </p>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose} // Use handleClose
               className="mt-8 min-h-[44px] rounded-xl bg-navy-800 px-6 py-3 font-heading text-sm font-bold text-white transition hover:bg-navy-900"
             >
               Close
