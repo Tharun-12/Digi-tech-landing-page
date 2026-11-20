@@ -280,25 +280,26 @@
 // }
 
 
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, MouseEvent } from 'react';
 import { Menu, MessageCircle, Phone, X } from 'lucide-react';
 import logo from '../assets/logo.webp';
-import {
-  CONTACT_EMAIL,
-  CONTACT_PHONES,
-  WHATSAPP_URL,
-} from '../sections/Config';
-import CallButton from '../components/CallButton';
+import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_HREF, WHATSAPP_URL } from '../sections/Config';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const links = [
-  { label: 'Home', short: 'Home', href: '#home' },
-  { label: 'About Us', short: 'About', href: '#about' },
-  { label: 'Services', short: 'Services', href: '#services' },
-  { label: 'Industries', short: 'Industries', href: '#industries' },
-  { label: 'Why iiiQBets', short: 'Why Us', href: '#why-choose-us' },
-  { label: 'Branding & Creative', short: 'Branding', href: '#brand-identity' },
-  { label: 'Contact Us', short: 'Contact', href: '#contact' },
+interface NavLink {
+  label: string;
+  short: string;
+  path: string;
+}
+
+const links: NavLink[] = [
+  { label: 'Home', short: 'Home', path: '/home' },
+  { label: 'About Us', short: 'About', path: '/about-us' },
+  { label: 'Service', short: 'Service', path: '/service' },
+  { label: 'Industries', short: 'Industries', path: '/industries' },
+  { label: 'Why iiiQBets', short: 'Why Us', path: '/why-choose-us' },
+  { label: 'Branding & Creativity', short: 'Branding', path: '/brand-identity' },
+  { label: 'Contact Us', short: 'Contact', path: '#contact' }, 
 ];
 
 const socials = [
@@ -313,58 +314,20 @@ const containerClass = 'w-full px-4 sm:px-6 lg:px-8 2xl:px-16';
 export default function Header({ onRequestCall }: { onRequestCall: () => void }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState('#home');
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Derive the active link from the current URL
+  const activePath = location.pathname === '/' ? '/home' : location.pathname;
 
   useEffect(() => {
-    links.forEach((l) => {
-      if (l.href !== '#contact' && !document.querySelector(l.href)) {
-        console.warn(`[Header] No section found for ${l.href}. Add id="${l.href.slice(1)}" to it.`);
-      }
-    });
-
     const onScroll = () => {
       setScrolled(window.scrollY > 12);
-
-      const sections = links
-        .map((link) => {
-          if (link.href === '#contact') return null;
-          const el = document.querySelector<HTMLElement>(link.href);
-          return el ? { href: link.href, el } : null;
-        })
-        .filter((s): s is { href: string; el: HTMLElement } => s !== null);
-
-      if (sections.length === 0) {
-        setActiveSection(links[0].href);
-        return;
-      }
-
-      const line = window.innerHeight * 0.35;
-      let current = sections[0].href;
-
-      for (const { href, el } of sections) {
-        const { top, bottom } = el.getBoundingClientRect();
-        if (top <= line && bottom > line) {
-          current = href;
-          break;
-        }
-      }
-
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
-        current = sections[sections.length - 1].href;
-      }
-
-      setActiveSection(current);
     };
 
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    const t = setTimeout(onScroll, 500);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
@@ -374,15 +337,18 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
     };
   }, [open]);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href === '#contact') {
-      e.preventDefault();
+  const handleNavClick = (e: MouseEvent<HTMLAnchorElement>, link: NavLink) => {
+    e.preventDefault();
+    
+    if (link.path === '#contact') {
       onRequestCall();
-      setActiveSection(href);
       setOpen(false);
-    } else {
-      setActiveSection(href);
+      return;
     }
+
+    // Navigate to the clean path. App.tsx handles the smooth scroll.
+    navigate(link.path);
+    setOpen(false);
   };
 
   return (
@@ -392,24 +358,15 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
         <div className={`${containerClass} flex flex-wrap items-center justify-between gap-2 py-2 text-xs`}>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <span className="hidden text-navy-100/80 md:inline">Digital Marketing · Creative · Technology</span>
-
-            {CONTACT_PHONES.map((phone) => (
-              <a
-                key={phone.href}
-                href={phone.href}
-                className="inline-flex items-center gap-1.5 transition hover:text-white"
-              >
-                <Phone className="h-3.5 w-3.5 text-brand-500" aria-hidden="true" />
-                {phone.display}
-              </a>
-            ))}
-
+            <a href={CONTACT_PHONE_HREF} className="inline-flex items-center gap-1.5 transition hover:text-white">
+              <Phone className="h-3.5 w-3.5 text-brand-500" aria-hidden="true" />
+              {CONTACT_PHONE_DISPLAY}
+            </a>
             <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex items-center gap-1.5 transition hover:text-white">
               <MailIcon />
               {CONTACT_EMAIL}
             </a>
           </div>
-
           <div className="flex items-center gap-1">
             {socials.map((s) => (
               <a
@@ -437,8 +394,8 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
       >
         <div className={`${containerClass} flex h-16 items-center justify-between gap-3 sm:h-[72px]`}>
           <a
-            href="#home"
-            onClick={(e) => handleNavClick(e, '#home')}
+            href="/home"
+            onClick={(e) => handleNavClick(e, links[0])}
             className="flex shrink-0 items-center gap-2.5"
             aria-label="iiiQBets home"
           >
@@ -447,12 +404,12 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
 
           <nav aria-label="Main navigation" className="hidden flex-1 items-center justify-center gap-0.5 xl:flex 2xl:gap-1">
             {links.map((link) => {
-              const isActive = activeSection === link.href;
+              const isActive = activePath === link.path;
               return (
                 <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
+                  key={link.label}
+                  href={link.path}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={`whitespace-nowrap rounded-lg px-2.5 py-2 text-[13px] font-semibold transition 2xl:px-3 2xl:text-sm ${
                     isActive ? 'text-brand-600' : 'text-navy-800/85 hover:text-brand-500'
                   }`}
@@ -474,21 +431,13 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
               <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               WhatsApp Us
             </a>
-
-            {/* Call button with sequential fallback */}
-            <CallButton
-              label="Call Us"
-              className="hidden min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-xl bg-brand-500 px-4 py-2.5 font-heading text-xs font-bold uppercase tracking-wide text-white shadow-card transition hover:-translate-y-0.5 hover:bg-brand-600 sm:inline-flex"
-            />
-
             <button
               type="button"
               onClick={onRequestCall}
-              className="hidden min-h-[44px] items-center whitespace-nowrap rounded-xl border-2 border-brand-500 px-4 py-2.5 font-heading text-xs font-bold uppercase tracking-wide text-brand-600 transition hover:bg-brand-500 hover:text-white lg:inline-flex"
+              className="hidden min-h-[44px] items-center whitespace-nowrap rounded-xl bg-brand-500 px-4 py-2.5 font-heading text-xs font-bold uppercase tracking-wide text-white shadow-card transition hover:-translate-y-0.5 hover:bg-brand-600 sm:inline-flex"
             >
               Get in Touch
             </button>
-
             <button
               type="button"
               onClick={() => setOpen(true)}
@@ -530,15 +479,14 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-
           <div className="mt-8 flex flex-col gap-1.5">
             {links.map((link) => {
-              const isActive = activeSection === link.href;
+              const isActive = activePath === link.path;
               return (
                 <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
+                  key={link.label}
+                  href={link.path}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={`rounded-xl px-4 py-3 font-heading text-sm font-bold transition hover:bg-white/10 hover:text-white ${
                     isActive ? 'text-brand-500' : 'text-navy-100'
                   }`}
@@ -548,19 +496,14 @@ export default function Header({ onRequestCall }: { onRequestCall: () => void })
               );
             })}
           </div>
-
           <div className="mt-8 grid gap-3">
-            <CallButton
-              label="Call Us"
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3.5 font-heading text-sm font-bold uppercase tracking-wide text-white"
-            />
             <button
               type="button"
               onClick={() => {
                 setOpen(false);
                 onRequestCall();
               }}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-white/25 px-5 py-3.5 font-heading text-sm font-bold uppercase tracking-wide text-white"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-brand-500 px-5 py-3.5 font-heading text-sm font-bold uppercase tracking-wide text-white"
             >
               Get in Touch
             </button>
