@@ -86,7 +86,7 @@
 
 
 import { useState, ReactNode, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import usePageTracking from './hooks/usePageTracking';
 
 import Header from './sections/Header';
@@ -106,7 +106,21 @@ import MidCta from './sections/MidCta';
 import PrivacyPolicy from './sections/PrivacyPolicy';
 import TermsAndConditions from './sections/TermsAndConditions';
 
+// Admin panel
+import { AuthProvider, ProtectedRoute } from './context/AuthContext';
+import AdminLogin from './Login/AdminLogin';
+import AdminLayout from './AdminLayout/AdminLayout';
+import Dashboard from "./Admin/AdminDashboard";
+import Contacts from './Admin/AdminContact';
+
 function PageTracker() {
+  const { pathname } = useLocation();
+  // Don't send admin page views to analytics
+  if (pathname.startsWith('/admin')) return null;
+  return <Tracker />;
+}
+
+function Tracker() {
   usePageTracking();
   return null;
 }
@@ -138,34 +152,27 @@ function Layout({ children, onRequestCall }: LayoutProps) {
   );
 }
 
+const pathToId: Record<string, string> = {
+  '/home': 'home',
+  '/about-us': 'about',
+  '/service': 'services',
+  '/industries': 'industries',
+  '/why-choose-us': 'why-choose-us',
+  '/brand-identity': 'brand-identity',
+};
+
 function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const openModal = () => setModalOpen(true);
-  
-  // This effect handles scrolling when the URL path changes
   const { pathname } = useLocation();
-  
-  useEffect(() => {
-    // Map paths to their section IDs
-    const pathToId: Record<string, string> = {
-      '/home': 'home',
-      '/about-us': 'about',
-      '/service': 'services',
-      '/industries': 'industries',
-      '/why-choose-us': 'why-choose-us',
-      '/brand-identity': 'brand-identity',
-    };
 
+  useEffect(() => {
     const targetId = pathToId[pathname];
-    if (targetId) {
-      // Add a tiny delay to ensure the DOM is fully rendered before scrolling
-      setTimeout(() => {
-        const element = document.getElementById(targetId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
+    if (!targetId) return;
+    const timer = setTimeout(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timer); // cleanup avoids scrolling after navigating away
   }, [pathname]);
 
   return (
@@ -185,24 +192,35 @@ function HomePage() {
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <PageTracker />
       <Routes>
-        {/* All main nav paths go to HomePage */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/about-us" element={<HomePage />} />
-        <Route path="/service" element={<HomePage />} />
-        <Route path="/industries" element={<HomePage />} />
-        <Route path="/why-choose-us" element={<HomePage />} />
-        <Route path="/brand-identity" element={<HomePage />} />
-        
-        {/* Separate legal pages */}
+        {/* Public site: all main nav paths render HomePage */}
+        {['/', '/home', '/about-us', '/service', '/industries', '/why-choose-us', '/brand-identity'].map((p) => (
+          <Route key={p} path={p} element={<HomePage />} />
+        ))}
+
+        {/* Legal pages */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/terms" element={<TermsAndConditions />} />
+
+        {/* Admin panel */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="contacts" element={<Contacts />} />
+        </Route>
       </Routes>
-    </>
+    </AuthProvider>
   );
 }
 

@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
 // Make sure these imports match your project structure
-import { SERVICE_OPTIONS } from '../sections/Config'; 
+import { SERVICE_OPTIONS } from '../sections/Config';
 import { BASE_URL } from '@/Apiurls/apiurl';
 
 const API_URL = BASE_URL;
@@ -9,6 +9,20 @@ const API_URL = BASE_URL;
 const inputClass =
   'mt-1 w-full rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
 const labelClass = 'block text-xs font-semibold text-navy-800';
+
+// ---- Meta tracking helpers ----
+function getCookie(name: string): string | undefined {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+function getFbc(): string | undefined {
+  const existing = getCookie('_fbc');
+  if (existing) return existing;
+  const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+  return fbclid ? `fb.1.${Date.now()}.${fbclid}` : undefined;
+}
+// -------------------------------
 
 export default function LeadModal({
   open,
@@ -22,37 +36,22 @@ export default function LeadModal({
   const [error, setError] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
 
-  // --- NEW: Listen for hash changes to open/close modal ---
-  useEffect(() => {
-    const handleHashChange = () => {
-      const isContactHash = window.location.hash === '#contact';
-      // If URL has #contact but modal is closed, open it
-      if (isContactHash && !open) {
-        // Assuming 'open' is controlled by a parent, we might need a way to trigger onOpen
-        // If this component doesn't have access to an onOpen prop, it's better to handle this in the parent.
-        // However, if we are handling state internally, we would setOpen(true) here.
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [open]);
-  // --------------------------------------------------------
-
-  // --- NEW: Modified onClose to clean up URL ---
+  // Close the modal and remove #contact from the URL
   const handleClose = () => {
     onClose();
-    // Remove the #contact from the URL when closed
     if (window.location.hash === '#contact') {
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + window.location.search
+      );
     }
   };
-  // --------------------------------------------
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose(); // Use handleClose here
+      if (e.key === 'Escape') handleClose();
     };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
@@ -61,7 +60,8 @@ export default function LeadModal({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
-  }, [open]); // Removed onClose from deps since handleClose wraps it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Reset the form each time the modal is closed
   useEffect(() => {
@@ -83,12 +83,26 @@ export default function LeadModal({
       const res = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, source: 'modal' }),
+        body: JSON.stringify({
+          ...data,
+          source: 'modal',
+          sourceUrl: window.location.href,
+          fbp: getCookie('_fbp'),
+          fbc: getFbc(),
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.success) {
         throw new Error(json.message || 'Request failed');
       }
+
+      // Browser Lead event with the SAME event ID the server used (deduplication).
+      // typeof check: ad blockers can prevent fbq from loading.
+      const fbq = (window as any).fbq;
+      if (typeof fbq === 'function' && json.eventId) {
+        fbq('track', 'Lead', {}, { eventID: json.eventId });
+      }
+
       form.reset();
       setSubmitted(true);
     } catch (err) {
@@ -112,13 +126,13 @@ export default function LeadModal({
       <button
         type="button"
         aria-label="Close dialog"
-        onClick={handleClose} // Use handleClose
+        onClick={handleClose}
         className="absolute inset-0 bg-navy-950/70 backdrop-blur-sm"
       />
       <div className="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-lift sm:p-6">
         <button
           type="button"
-          onClick={handleClose} // Use handleClose
+          onClick={handleClose}
           aria-label="Close"
           className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-navy-50 text-navy-700 transition hover:bg-navy-100"
         >
@@ -136,7 +150,7 @@ export default function LeadModal({
             </p>
             <button
               type="button"
-              onClick={handleClose} // Use handleClose
+              onClick={handleClose}
               className="mt-8 min-h-[44px] rounded-xl bg-navy-800 px-6 py-3 font-heading text-sm font-bold text-white transition hover:bg-navy-900"
             >
               Close
