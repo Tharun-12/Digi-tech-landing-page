@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { BASE_URL } from '@/Apiurls/apiurl';
 
 export interface Contact {
   id: number;
@@ -13,7 +14,7 @@ export interface Contact {
   created_at: string;
 }
 
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
+export const API_URL = BASE_URL;
 
 export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -25,7 +26,7 @@ export function useContacts() {
     setError('');
     try {
       const res = await fetch(`${API_URL}/api/contact`);
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);0
       const json = await res.json();
       if (!json.success) throw new Error('The API reported a failure');
       setContacts(json.data);
